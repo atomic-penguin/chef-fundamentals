@@ -34,8 +34,8 @@ Eric G. Wolfe, Sr. Linux Administrator
 Marshall University Staff
 
 * ITI Systems and Enterprise Applications groups
-* Effective tool for those who have used it
-* It is a risk that not enough people know how to use it
+* Chef has been an ffective tool for those who have used it
+* Chef can be a risk because not enough people know how to use it
 * Objective is to cover basic usage and principles of Chef
 
 # Course Objectives

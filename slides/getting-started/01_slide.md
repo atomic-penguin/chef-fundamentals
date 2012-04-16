@@ -7,35 +7,18 @@ Section Objectives
 * Set up connectivity to a Chef Server
 * Create an initial Chef Repository
 
-.notes These course materials are Copyright © 2010-2012 Opscode, Inc. All rights reserved.
+.notes These course materials are Copyright 2012 Eric G. Wolfe and 2010-2012 Opscode, Inc. All rights reserved.
 This work is licensed under a Creative Commons Attribute Share Alike 3.0 United States License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/us; or send a letter to Creative Commons, 171 2nd Street, Suite 300, San Francisco, California, 94105, USA.
 
 # Supported Platforms
 
-Opscode supports Chef Clients on the following platforms:
+MU Systems staff have tested and ran chef-client, or knife, on:
 
 * Ubuntu (10.04, 10.10, 11.04, 11.10)
-* Debian (5.0, 6.0)
 * RHEL & CentOS (5.x, 6.x)
-* Fedora 10+
-* Mac OS X (10.4, 10.5, 10.6)
-* Windows 7
-* Windows Server 2003 R2, 2008 R2
+* Windows 7 / 2008
 
-# Additional Platforms
-
-Chef Client is known to also run on the following platforms:
-
-* Ubuntu (6.06, 8.04-9.10)
-* Gentoo (11.1,11.2)
-* FreeBSD (7.1-9.0+)
-* OpenBSD (4.4+)
-* OpenSolaris (2008.11) / OpenIndiana / SmartOS
-* Solaris 5.10 (u6)
-* SuSE (11.x)
-* Windows XP, Vista
-
-.notes Opscode does not fully test every aspect of Chef on these platforms, but Chef Client is known to run and applicable built in resources work.
+.notes chef-client is the config management component, knife is the command and control.
 
 # Ruby and Chef
 
@@ -87,13 +70,7 @@ For some platforms, getting the required versions of Ruby and RubyGems for Chef 
 
 The current version of Ruby not being packaged by default has lead to other solutions, primarily centered around installing Ruby from source, to emerge.
 
-Compiling from source is time consuming, and many (most?) system administrators prefer to install all software using packages.
-
-# Introducing Omnibus
-
-Opscode needed a better way to distribute Chef so it is easier for customers and community members to install.
-
-We also need a consistent installation method that our support team can troubleshoot.
+Compiling from source is time consuming, and many users prefer to install all software using packages.
 
 # Omnibus Build System
 
@@ -117,14 +94,11 @@ Instructions for installation are at:
 
 # Supported Platforms
 
-Installers are created for the following platforms. This may be different than the list of supported platforms, earlier.
+MU Systems staff has tested chef-full packages on:
 
-* Debian, Ubuntu
-* RHEL, CentOS, Scientific Linux, Oracle Enterprise Linux
-* Fedora, Amazon Linux
-* Mac OS X
-* OpenIndiana
-* Windows (Server 2003, 2008)
+* Ubuntu
+* RHEL, CentOS
+* Windows 7, 2008)
 
 # Linux/Unix Installation
 
@@ -154,14 +128,6 @@ Chef binaries are in `C:\opscode\bin`. The other binaries are in `C:\opscode\emb
 
 These directories are both added to the system `%PATH%`.
 
-# Chef Full Ruby
-
-The Ruby included in the Chef Full stack installation package is intended for Chef's use.
-
-If Ruby is required for other tools or applications on the system, Opscode recommends installing it with a recipe.
-
-If you wish to install Chef extensions such as knife plugins, report handlers or gems used in cookbooks, use the full-stack included Ruby.
-
 # Chef Toolbox
 
 Chef comes with several tools of its own.
@@ -173,13 +139,13 @@ Chef comes with several tools of its own.
 
 # Other Tools
 
-In working with infrastructure, we have several tools in the toolbox.
+In working with infrastructure as code, we may need several tools in our toolbox.
 
 Non-Chef tools:
 
-* Shell (Bash, Zsh, Powershell, Cmd.exe)
-* Text editors (Emacs, Vim, Notepad++)
-* Version control systems (Git, Subversion, Perforce)
+* Shell (Bash, Powershell, Cmd.exe)
+* Text editors (Vim, Joe, Notepad++)
+* Version control system (Git)
 * Ruby programming language
 
 # Chef Tools
@@ -195,16 +161,8 @@ Each command has a `--help` or `-h` command-line option that displays options an
 
 Each command also has a corresponding Unix `man(1)` page, which is included in the installed Chef library.
 
-# Built-in Help
-
-As Windows does not have a `man(1)` help system, HTML pages are generated. These are located in:
-
-* C:\opscode\chef\embedded\lib\ruby\
-  gems\1.9.1\gems\chef-VERSION\distro\common\html
-
-Where "VERSION" is the version of Chef.
-
-A future release will have helpers to make these easier to access.
+Since Windows does not have a `man(1)` help system, the recommended form of documentation on this platform
+is the Opscode Wiki at [http://wiki.opscode.com](http://wiki.opscode.com).
 
 # Configuration
 
@@ -223,26 +181,26 @@ Context of the configuration file to the appropriate tool is important.
     @@@ruby
     log_level :info
     log_location STDOUT
-    chef_server_url "https://api.opscode.com/organizations/opstrain"
+    chef_server_url "http://muchef.marshall.edu:4000"
 
 # Ohai
 
-Ohai is a standalone library written by Opscode that is installed with Chef as a dependency.
+`Ohai` is a standalone library that is installed with Chef as a dependency.
 
-Ohai uses plugins to profile the local system when Chef runs to gather
+`Ohai` uses plugins to profile the local system when Chef runs to gather
 information.
 
-When Chef runs, this data gets stored on the Chef Server.
+When `chef-client` runs, this data gets stored on the Chef Server as `node attributes`.
 
 # Ohai Configuration
 
 Ohai is usually configured via the chef-client configuration file
 (`/etc/chef/client.rb`). It has no other configuration file.
 
-The ohai configuration must be modified with `Ohai::Config`. It is a Ruby hash-like object that uses symbols for key names.
+The ohai configuration must be modified with `Ohai::Config` object. It is a Ruby hash that uses symbols for key names.
 
     @@@ruby
-    Ohai::Config[:disabled_plugins] << 'passwd'
+    Ohai::Config[:disabled_plugins] = 'passwd'
 
 .notes Disabling plugins is the most common configuration to do for Ohai. We won't detail more configuration at this time.
 
@@ -252,8 +210,8 @@ Knife is the "swiss army knife" of infrastructure management tools.
 
 * manage the local Chef repository
 * interact with the Chef Server API
-* interact with cloud computing providers' APIs
-* extend with custom plugins/libraries
+* interact with cloud computing APIs
+* extensible with custom plugins/libraries
 
 # Knife Sub-commands
 
@@ -295,7 +253,7 @@ The default configuration file for Knife is `.chef/knife.rb`; knife looks for it
     $PWD/".."/.chef/knife.rb
     ~/.chef/knife.rb
 
-Opscode Hosted Chef provides a pregenerated `knife.rb` you can use.
+The MU Chef repo provides a pregenerated `knife.rb` you can use.
 
 # Knife Configuration Options
 
@@ -322,22 +280,20 @@ are "actors"
 
 # Knife Configuration
 
-Minimal `knife.rb` configured to use a particular Opscode Hosted Chef organization and Opscode user.
+Minimal `knife.rb` configured to use MU Chef server with MUNET username.
 
     @@@ruby
-    node_name       "opscode-trainer"
-    client_key      "opscode-trainer.pem"
-    chef_server_url "https://api.opscode.com/organizations/opstrain"
+    node_name       user 
+    client_key      "#{ENV['HOME']}/.chef/#{user}.pem" 
+    chef_server_url "http://muchef.marshall.edu:4000"
 
 .notes We will talk more about how the authentication system works in Chef later in Anatomy of a Chef Run
 
 # Knife User
 
-The configuration value `node_name` in the `knife.rb` refers to an Opscode user.
+The configuration value `node_name` in the `knife.rb` refers to a Chef user.
 
-Users are global to the entire Opscode service.
-
-Users may be associated to one or more organizations.
+Users are global to the entire Chef service.
 
 # Knife Configuration
 
@@ -348,11 +304,11 @@ One directory it does need to be told is the path where cookbooks live.
     @@@ruby
     cookbook_path "./cookbooks"
 
-This configuration file is Ruby, not bash, so we need to be careful with the path usage. The default `knife.rb` provided with a Hosted Chef account through the webui will have this already set for you.
+This configuration file is Ruby, not bash, so we need to be careful with the path usage. The default `knife.rb` provided within the MU Chef repo will have this already set for you.
 
 # Knife Configuration
 
-The cookbook path in the pre-generated Knife configuration file uses a relative location based on the location of the `knife.rb` file.
+The cookbook path in the MU Chef repo Knife configuration file uses a relative location based on the location of the `knife.rb` file.
 
     @@@ruby
     current_dir = File.dirname(__FILE__)
@@ -417,12 +373,10 @@ Unlike Knife, the `node_name` is not a user, but the actual system's name for it
 The minimal configuration for `chef-client` in `/etc/chef/client.rb` to talk to the Chef Server:
 
     @@@ruby
-    chef_server_url  "https://api.opscode.com/organizations/opstrain"
-    validation_client_name "opstrain-validator"
+    chef_server_url  "http://muchef.marshall.edu:4000"
+    validation_client_name "chef-validator"
 
 All other options will use default values, which are meant to be sane defaults.
-
-.notes "opstrain" here is the organization name, each organization will have its own value.
 
 # Chef Client Configuration
 
@@ -472,8 +426,8 @@ The following options control how the `chef-client` process behaves.
     @@@ruby
     log_level        :info
     log_location     STDOUT
-    chef_server_url  "https://api.opscode.com/organizations/ORGNAME"
-    validation_client_name "ORGNAME-validator"
+    chef_server_url  "http://muchef.marshall.edu:4000"
+    validation_client_name "chef-validator"
     # Using default node name
 
 # Command-line Options Override
@@ -483,7 +437,7 @@ Options passed on the command-line override values in the configuration file.
     @@@sh
     chef-client -l debug
     chef-client -N node-name
-    chef-client -S https://api.opscode.com/organizations/OTHER
+    chef-client -S http://muchef.marshall.edu:4000
     chef-client --help
 
 # Chef Solo
@@ -530,15 +484,6 @@ The Chef Server is a centralized publishing system for infrastructure data and c
 * Stores cookbooks
 * Provides an API for management and discovery
 
-# Chef Server API Implementations
-
-Opscode Hosted Chef
-
-Opscode Private Chef
-
-Open Source Chef Server
-
-Commis (Python)
 
 # Chef Server Components
 
@@ -560,64 +505,74 @@ Web management console (API client)
 
 All communication is initiated by API clients, and never from the Chef Server directly.
 
-Communication is over HTTP. Opscode Hosted Chef and Opscode Private Chef use HTTPS.
+Communication is over HTTP.
 
 All API requests are authenticated using digital signatures.
 
-All API requests for Opscode Hosted Chef and Opscode Private Chef are authorized with role-based access controls.
-
 Custom data ("data bags") can be encrypted with user-supplied keys.
 
-# Chef Server
+# Install chef-full packages Linux/Mac OS X
 
-We will use Opscode Hosted Chef as the Chef Server for this course.
+    @@@sh
+    curl -L http://www.opscode.com/chef/install.sh | sudo bash
 
-* It is free up to 5 nodes.
-* It is internet-accessible.
-* No additional software to install/configure.
+# Install chef-full packages Windows
 
-.notes We will set up access to Opscode Hosted Chef during the exercise, and walk through the steps briefly next.
+ 1. Go to [http://www.opscode.com/chef/install](http://www.opscode.com/chef/install)
+ 2. Select the `Windows Server` package, which also works on Vista and 7.
+ 3. Click through the install wizard accepting the default options
 
-# Sign up for Hosted Chef
+# Install Git Linux
 
-Go to http://opscode.com
+    @@@sh
+    apt-get install git # Debian / Ubuntu
+    yum install git # RHEL / CentOS
 
-<center><img src="../images/hosted-chef-signup.png" height="371" width="625"></center>
+# Install Git Windows / Mac OS X
 
-# Free Up to 5 Nodes
+ 1. Go to [http://git-scm.com](http://git-scm.com)
+ 2. Follow Mac OSX or Windows* link to Google code for appropriate DMG or EXE package.
 
-<center><img src="../images/5-free-nodes.png"></center>
+ * The latest `Full installer` msysGit package is recommended for Windows
 
-.notes Opscode Hosted Chef is free up to 5 nodes, and we'll use less than that for the class.
+# Sign up to use MU Chef server
 
-# Sign up for Hosted Chef
+Go to http://muchef.marshall.edu:4040
 
-<center><img src="../images/free-trial.png"></center>
+<center><img src="../images/muchef-signup.png"></center>
 
-.notes Select the "free trial" button to get the signup form.
+**Wait for the cue from the instructor** as accounts are created.
 
-# About You
+# Test your ability to login to the muchef server
 
-Organization short name:
+<center><img src="../images/muchef-login-test.png"></center>
 
-* Alphanumeric
-* Hyphen and underscore
+# SSH keys for Git access Linux / Mac OS X
 
-<center><img src="../images/signup-about.png"></center>
+    @@@sh
+    ssh-keygen -t rsa
 
-.notes Fill out accurate information. To get support, we need valid contact information on file. The organization shortname should be lowercase letters and numbers. It can include hyphen and underscore.
+ * E-mail a copy of your id_rsa.pub to the Instructor <wolfe21@marshall.edu>
 
-# Next Steps
+# SSH keys for Git access Windows
 
-Verify your email address.
+ 1. Open the Git GUI
+ 2. Click Help -> Show SSH Keys -> Generate Key
 
-<center><img src="../images/next-steps.png"></center>
+<center><img src="../images/git-generate-sshkey.png"></center>
 
-# Next Steps
+ * Or copy existing OpenSSH keys to `V:/.ssh`
 
-Select "Experienced with Chef" to go to the Management Console.
+# Clone MU Chef repo
 
-<center><img src="../images/email-verified.png"></center>
+Open `git bash` on Windows, or preferred terminal on Linux / Mac.
+
+    @@@sh
+    git clone git@git.marshall.edu:/var/git/chef.git chef-repo
+
+ * This should clone the central MU Chef repo to a chef-repo folder in your home directory.
+
+.notes Windows may default to V:/, be cognizant of available space.
 
 # Download Organization Assets
 
