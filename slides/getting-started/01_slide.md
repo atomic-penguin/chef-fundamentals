@@ -511,6 +511,14 @@ All API requests are authenticated using digital signatures.
 
 Custom data ("data bags") can be encrypted with user-supplied keys.
 
+# Chef management workstation preparation
+
+  1. Install chef-full packages
+  2. Install git
+  3. Install editor (optional Windows step)
+  4. Generate keys for Git and Chef
+  5. Edit configuration files in home folder
+
 # Install chef-full packages Linux/Mac OS X
 
     @@@sh
@@ -535,17 +543,38 @@ Custom data ("data bags") can be encrypted with user-supplied keys.
 
  * The latest `Full installer` msysGit package is recommended for Windows
 
-# Sign up to use MU Chef server
+# Install editor (optional for Windows)
 
-Go to http://muchef.marshall.edu:4040
+You can use the basic notepad.exe as a source editor on Windows.
+
+If you want a syntax highlighting source editor, then install something like Notepad++.
+
+* [http://notepad-plus.sf.net](http://notepad-plus.sf.net)
+
+# Configure Windows to show file extensions
+
+ 1. Open `Control Panel`
+ 2. Select `Appearance and Personalization`
+ 3. Click `Show hidden files and folders`
+ 4. Uncheck the box next to `Hide extensions for known file types`
+
+<center><img src="../images/ctrlpanel-hide-extensions.png"></center>
+
+# Log in to the MU Chef server 
+
+Go to [http://muchef.marshall.edu:4040](http://muchef.marshall.edu:4040)
 
 <center><img src="../images/muchef-signup.png"></center>
 
-**Wait for the cue from the instructor** as accounts are created.
+A **default training password** will be provided to users with new accounts.
 
-# Test your ability to login to the muchef server
+# Test your login on the MU Chef dashboard
+
+You should see the `Nodes` tab when you first login to the Chef dashboard.
 
 <center><img src="../images/muchef-login-test.png"></center>
+
+Reset your default password by clicking the `Edit account` link.
 
 # SSH keys for Git access Linux / Mac OS X
 
@@ -558,6 +587,7 @@ Go to http://muchef.marshall.edu:4040
 
  1. Open the Git GUI
  2. Click Help -> Show SSH Keys -> Generate Key
+ 3. E-mail a copy of your id_rsa.pub to the Instructor <wolfe21@marshall.edu>
 
 <center><img src="../images/git-generate-sshkey.png"></center>
 
@@ -565,14 +595,14 @@ Go to http://muchef.marshall.edu:4040
 
 # Clone MU Chef repo
 
-Open `git bash` on Windows, or preferred terminal on Linux / Mac.
+Open `git bash` on Windows, or your preferred terminal emulator on Linux / Mac.
 
     @@@sh
     git clone git@git.marshall.edu:/var/git/chef.git chef-repo
 
  * This should clone the central MU Chef repo to a chef-repo folder in your home directory.
 
-.notes Windows may default to V:/, be cognizant of available space.
+.notes Windows may default to V:/, be cognizant of available space on your V: folder.
 
 # Download Organization Assets
 
