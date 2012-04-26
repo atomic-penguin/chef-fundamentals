@@ -92,14 +92,6 @@ Instructions for installation are at:
 
 * [http://opscode.com/chef/install](http://opscode.com/chef/install)
 
-# Supported Platforms
-
-MU Systems staff has tested chef-full packages on:
-
-* Ubuntu
-* RHEL, CentOS
-* Windows 7, 2008)
-
 # Linux/Unix Installation
 
 Installation on Linux and Unix is done with a shell script:
@@ -683,14 +675,29 @@ Example Chef Repository directory tree:
 
 <center><img src="../images/working-with-chef.png"></center>
 
+# Summary
+
+* Ruby and Chef Installation
+* Tools and commands that come with Chef
+* Connectivity to the Chef Server
+* Components of a Chef Repository
+
+# Questions
+
+* In what language is Chef written?
+* What are commands / tools that come with Chef?
+* What do Chef's commands have in common?
+* What configuration is required to connect to a Chef Server?
+* Student questions?
+
 # Additional Resources
 
-* http://wiki.opscode.com/display/chef/Resources
-* http://wiki.opscode.com/display/chef/Recipes
-* http://wiki.opscode.com/display/chef/Chef+Repository
-* http://wiki.opscode.com/display/chef/Chef+Configuration+Settings
-* http://wiki.opscode.com/display/chef/Server+API
-* http://community.opscode.com/cookbooks
+* [http://wiki.opscode.com/display/chef/Resources](http://wiki.opscode.com/display/chef/Resources)
+* [http://wiki.opscode.com/display/chef/Recipes](http://wiki.opscode.com/display/chef/Recipes)
+* [http://wiki.opscode.com/display/chef/Chef+Repository](http://wiki.opscode.com/display/chef/Repository)
+* [http://wiki.opscode.com/display/chef/Chef+Configuration+Settings](http://wiki.opscode.com/display/chef/Chef+Configuration+Settings)
+* [http://wiki.opscode.com/display/chef/Server+API](http://wiki.opscode.com/display/chef/Server+API)
+* [http://community.opscode.com/cookbooks](http://community.opscode.com/cookbooks)
 
 # Lab Exercise
 

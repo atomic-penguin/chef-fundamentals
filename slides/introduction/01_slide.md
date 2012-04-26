@@ -34,7 +34,7 @@ Eric G. Wolfe, Sr. Linux Administrator
 Marshall University Staff
 
 * ITI Systems and Enterprise Applications groups
-* Chef has been an ffective tool for those who have used it
+* Chef has been an effective tool for those who have used it
 * Chef can be a risk because not enough people know how to use it
 * Objective is to cover basic usage and principles of Chef
 
@@ -231,8 +231,8 @@ Chef provides a framework for system integration.
 
 * Resources are written in Chef Recipes, a Ruby domain-specific
   language (DSL).
-* Recipe helpers such as *search* allow dynamic data usage.
-* Chef provides a library of *resource* primitives that can be used for other
+* Recipe helpers such as *Search* allow dynamic data usage.
+* Chef provides a library of *Resource* primitives that can be used for other
   purposes.
 
 .notes Each of these topics is discussed in greater detail.
@@ -244,7 +244,7 @@ features that make it easy to create domain specific languages. This
 lends itself quite nicely to configuration management.
 
 In Chef, Ruby knowledge is not necessary, as the Chef DSL provides
-primitive *resource* functions to accomplish most anything.  However,
+primitive *Resource* functions to accomplish most anything.  However,
 the full power of Ruby is still there when you need it.
 
 Chef *Recipes* are a pure Ruby domain specific language. They are
