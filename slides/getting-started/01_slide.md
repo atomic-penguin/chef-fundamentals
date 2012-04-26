@@ -517,7 +517,7 @@ Custom data ("data bags") can be encrypted with user-supplied keys.
   2. Install git
   3. Install editor (optional Windows step)
   4. Generate keys for Git and Chef
-  5. Edit configuration files in home folder
+  5. Edit configuration files in `$HOME` folder *(V:/ on Win)*
 
 # Install chef-full packages Linux/Mac OS X
 
@@ -576,6 +576,26 @@ You should see the `Nodes` tab when you first login to the Chef dashboard.
 
 Reset your default password by clicking the `Edit account` link.
 
+# Create your client API key
+
+ 1. Click `Clients` tab.
+ 2. Click `Create` tab.
+ 3. Enter your username in the `Name` textbox.
+ 4. Check the `Admin` box.
+ 5. Finally click the submit button labeled `Create client`.
+
+<center><img src="../images/create-a-knife-client.png"></center>
+
+# Copy private key to $HOME/.chef folder
+
+ 1. Copy your `private key` to the clipboard.
+ 2. Create a `.chef` folder in your `home` directory.
+ 3. Paste your `private key` into a file named after your username, with a .pem extension *(would be myusername-a.pem in this case)*.
+
+<center><img src="../images/client-private-key.png"></center>
+
+.notes Windows home directory will be V:/ in most cases
+
 # SSH keys for Git access Linux / Mac OS X
 
     @@@sh
@@ -604,34 +624,38 @@ Open `git bash` on Windows, or your preferred terminal emulator on Linux / Mac.
 
 .notes Windows may default to V:/, be cognizant of available space on your V: folder.
 
-# Download Organization Assets
+# Bash .profile script in $HOME *(V:/ on Win)*
 
-Login: https://manage.opscode.com
+    @@@sh
+    #!/bin/bash
+    OPSCODE_USER=myusername-a
+    ORGNAME=chef
+    PATH=$PATH:/c/Program\ Files\ \(x86\)/Notepad++
+    EDITOR=notepad++
+    COOKBOOK_EMAIL='myemail@marshall.edu'
+    COOKBOOK_COPYRIGHT='Full Name'
+    export ORGNAME OPSCODE_USER EDITOR COOKBOOK_COPYRIGHT COOKBOOK_EMAIL PATH
 
-<center><img src="../images/select-organizations.png"></center>
-<center><img src="../images/generate-validation-key.png"></center>
-<center><img src="../images/generate-knife-config.png"></center>
+# Test knife API client
 
-Download the validation key and knife config to somewhere such as ~/Downloads.
+ 1. Open a new shell, or `git bash` window.
+ 2. Change directories to your `chef-repo` which you previously checked out.
+ 3. Type `knife status`.  This should return the status of managed nodes.
 
-# Download User Private key
+# Test knife API client
 
-Select your username at the top of the management console to access your profile page.
+    $ knife status
+    30 minutes ago, machine1, machine1, 192.0.2.3, redhat 5.8.
+    29 minutes ago, machine2, machine2, 192.0.2.5, redhat 5.8.
+    29 minutes ago, machine3, machine3, 192.0.2.2, centos 5.8.
 
-<center><img src="../images/manage-console-user-login.png"></center>
-<center><img src="../images/user-get-private-key.png"></center>
+# Workstation setup Results
 
-.notes Click your username in the upper right corner. Then get the
-private key for your user. Save this in the same directory as the
-organization validation key and the knife configuration file.
-
-# Sign-up Results
-
-* Opscode Hosted Chef Login
-* Opscode Hosted Chef Organization
-* User private key
-* Validation or Organization key
-* Knife Configuration file
+* MU Chef client API key
+* SSH private key
+* Knife Configuration file, included in chef-repo
+* Bash .profile script
+* Chef-repo directory with Chef code 
 
 # Chef Repository
 
@@ -659,23 +683,6 @@ Example Chef Repository directory tree:
 
 <center><img src="../images/working-with-chef.png"></center>
 
-# Summary
-
-* Ruby and Chef Installation
-* Tools and commands that come with Chef
-* Connectivity to the Chef Server
-* Components of a Chef Repository
-
-# Questions
-
-* In what language is Chef written?
-* How is Chef distributed by Opscode?
-* What are commands / tools that come with Chef?
-* What do Chef's commands have in common?
-* What are two implementations of the Chef Server API?
-* What configuration is required to connect to a Chef Server?
-* Student questions?
-
 # Additional Resources
 
 * http://wiki.opscode.com/display/chef/Resources
@@ -692,4 +699,4 @@ Getting Started
 * Install Ruby and Chef
 * Get familiar with the tools that come with Chef
 * Set up connectivity to a Chef Server
-* Create an initial Chef Repository
+* Clone a Chef Repository with Git
