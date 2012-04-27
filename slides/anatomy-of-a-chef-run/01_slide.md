@@ -7,7 +7,7 @@ Section Objectives:
 * Node convergence phases
 * Notification handler types
 
-.notes These course materials are Copyright © 2010-2012 Opscode, Inc. All rights reserved.
+.notes These course materials are Copyright 2012, Eric G. Wolfe and 2010-2012 Opscode, Inc. All rights reserved.
 This work is licensed under a Creative Commons Attribute Share Alike 3.0 United States License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/us; or send a letter to Creative Commons, 171 2nd Street, Suite 300, San Francisco, California, 94105, USA.
 
 # Anatomy of a Chef Run
@@ -66,22 +66,12 @@ exclusive, hip-hoppin' club
 
 <center><img src="../images/authn-flow.png" height="454" width="879" /></center>
 
-# Users are Special API Clients
-
-With Opscode Hosted Chef, people authenticate as *Users*, which are
-special API clients since they're global.
-
-Users are associated with an *Organization*.
-
-What a user can do is determined by the access control lists in the
-organization and by granting of certain group-based privileges.
-
 # Node Objects
 
 After the client has authenticated with the Server, Chef retrieves the node object from the server.
 
 Node objects represent a set of data called attributes and a list of
-configuration to apply called a run list.
+configuration steps to apply called a run list.
 
 # Node Object
 
@@ -207,8 +197,8 @@ Convergence in Chef happens in two phases.
 
 # Convergence: Compile
 
-Chef recipes are written in Ruby. During the compile phase, the Chef
-Recipe DSL is processed for Chef *Resources* to be configured.
+Chef recipes are written in Ruby. During the compile phase, the
+Recipe DSL is processed for *Resources* to be configured.
 
 During the processing of recipes:
 

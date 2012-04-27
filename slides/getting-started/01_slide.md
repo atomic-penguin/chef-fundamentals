@@ -628,6 +628,8 @@ Open `git bash` on Windows, or your preferred terminal emulator on Linux / Mac.
     COOKBOOK_COPYRIGHT='Full Name'
     export ORGNAME OPSCODE_USER EDITOR COOKBOOK_COPYRIGHT COOKBOOK_EMAIL PATH
 
+Example .profile scripts are included in chef-repo/.chef/examples.
+
 # Test knife API client
 
  1. Open a new shell, or `git bash` window.
