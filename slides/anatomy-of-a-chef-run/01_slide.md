@@ -122,7 +122,7 @@ recipes in the node's expanded run list.
 Chef also downloads all cookbooks that are listed as dependencies
 which might not appear in the run list.
 
-If the node's `chef_environment` specifies cookbook versions, the Chef
+If the node's `chef_environment` specifies cookbook versions, then Chef client
 downloads the version specified. Otherwise the latest available
 version is downloaded.
 
@@ -281,12 +281,12 @@ Abnormal exit from unhandled exception:
 
 # Additional Resources
 
-* http://wiki.opscode.com/display/chef/Anatomy+of+a+Chef+Run
-* http://wiki.opscode.com/display/chef/Authentication
-* http://wiki.opscode.com/display/chef/Chef+Client
-* http://wiki.opscode.com/display/chef/Nodes
-* http://wiki.opscode.com/display/chef/Attributes
-* http://wiki.opscode.com/display/chef/Evaluate+and+Run+Resources+at+Compile+Time
+* [http://wiki.opscode.com/display/chef/Anatomy+of+a+Chef+Run](http://wiki.opscode.com/display/chef/Anatomy+of+a+Chef+Run)
+* [http://wiki.opscode.com/display/chef/Authentication](http://wiki.opscode.com/display/chef/Authentication)
+* [http://wiki.opscode.com/display/chef/Chef+Client](http://wiki.opscode.com/display/chef/Chef+Client)
+* [http://wiki.opscode.com/display/chef/Nodes](http://wiki.opscode.com/display/chef/Nodes)
+* [http://wiki.opscode.com/display/chef/Attributes](http://wiki.opscode.com/display/chef/Attributes)
+* [http://wiki.opscode.com/display/chef/Evaluate+and+Run+Resources+at+Compile+Time](http://wiki.opscode.com/display/chef/Evaluate+and+Run+Resources+at+Compile+Time)
 
 # Lab Exercise
 
