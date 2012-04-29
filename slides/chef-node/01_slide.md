@@ -67,8 +67,8 @@ You can find the attributes of a node by running "ohai".
 
 The exact attributes will vary by node based on the platform and the
 available plugins. The following list is an abbreviated example from
-an Ubuntu Linux node. Each of these may have values that are strings,
-arrays or hashes.
+a Linux node. Each of these may have values that are strings, arrays
+or hashes.
 
 * `chef_packages` - version information about Chef and Ohai
 * `cpu` - information about installed processor(s)
@@ -102,7 +102,7 @@ arrays or hashes.
 * `uptime` - the system's uptime
 * `uptime_seconds` - uptime in seconds, useful for calculation
 * `virtualization` - if the node is virtualized, additional
-  information is avaialble
+  information such as hypervisor is available
 
 # Attribute Values
 
@@ -111,8 +111,8 @@ Node attributes can be used in recipes and templates.
 Access node attributes like Ruby hash keys.
 
     @@@ruby
-    node["fqdn"] # => "www1.example.com"
-    node["chef_packages]["chef"]["version"] # => "0.10.8"
+    node['fqdn'] # => "www1.example.com"
+    node['chef_packages']['chef']['version'] # => "0.10.8"
 
 # Attribute Conditionals
 
@@ -123,33 +123,20 @@ This is commonly done to match a node's platform.
 # Attribute Conditionals
 
     @@@ruby
-    case node["platform"]
-    when "debian", "ubuntu"
-      package "apache2-doc" do
+    case node['platform']
+    when 'debian', 'ubuntu'
+      package 'apache2-doc' do
         action :install
       end
     end
 
-    package "apache2" do
-      case node["platform"]
-      when "centos","redhat"
-        package_name "httpd"
+    package 'apache2' do
+      case node['platform']
+      when 'centos','redhat'
+        package_name 'httpd'
       end
       action :install
     end
-
-# platform? Method
-
-The `platform?` method will return `true` if one of the parameters
-matches the `node["platform"]` attribute. The method takes a comma
-separated list of platform names (lower-case).
-
-    @@@ruby
-    # on an ubuntu system:
-    platform?("ubuntu") # => true
-
-This isn't a `Chef::Node` method, but worth mentioning here as an
-alternate way to check the node's platform.
 
 # Attributes in Strings
 
@@ -158,7 +145,7 @@ string. For example, we can set an attribute where the Apache
 directory is, and write a configuration file there dynamically.
 
     @@@ruby
-    template "#{node["apache"]["dir"]}/ports.conf" do
+    template "#{node['apache']['dir']}/ports.conf" do
       # ...
     end
 
@@ -172,9 +159,9 @@ typing longer attributes.
 anything. Here we use a node attribute:
 
     @@@ruby
-    template "#{node["apache"]["dir"]}/ports.conf" do
+    template "#{node['apache']['dir']}/ports.conf" do
       # ...
-      variables :apache_listen_ports => node["apache"]["listen_ports"]
+      variables :apache_listen_ports => node['apache']['listen_ports']
     end
 
 # Variables in a Template
@@ -182,7 +169,8 @@ anything. Here we use a node attribute:
 When referring to the variables in the actual template, we must use a
 class instance variable (starting with `@`).
 
-    #This file generated via template by Chef.
+    @@@ruby
+    #This file generated via template by Chef for <%= node['fqdn'] %>
     <% @apache_listen_ports.each do |port| -%>
     Listen <%= port %>
     NameVirtualHost *:<%= port %>
@@ -193,9 +181,10 @@ class instance variable (starting with `@`).
 
 We can also use node attributes directly.
 
-    ServerRoot "<%= node["apache"]["dir"] %>"
+    @@@ruby
+    ServerRoot "<%= node['apache']['dir'] %>"
     # ...
-    <% if node["platform"] == "debian" || node["platform"] == "ubuntu" -%>
+    <% if node['platform'] == 'debian' || node['platform'] == 'ubuntu' -%>
 
 Node attributes used in a template can come from the cookbook itself,
 or one auto detected by chef such as "platform".
@@ -219,9 +208,10 @@ Use the "default" keyword to set the attributes.
 
 The node object is implied, `default` is a method of Chef::Node.
 
-    default["apache"]["listen_ports"] = [ "80","443" ]
-    default["apache"]["contact"] = "ops@example.com"
-    default["apache"]["timeout"] = 300
+    @@@ruby
+    default['apache']['listen_ports'] = [ '80', '443' ]
+    default['apache']['contact'] = 'systems@marshall.edu'
+    default['apache']['timeout'] = 300
 
 # Recipe Attributes
 
@@ -244,6 +234,8 @@ than cookbook attributes files "default" and "set" and role
     @@@ruby
     node.set['unicorn']['workers'] = node['cpu']['total'].to_i * 4
 
+.notes set and normal attributes are the same
+
 # Role Attributes
 
 Node attributes can be set in roles using "`default_attributes`".
@@ -252,6 +244,7 @@ This overrides the attributes set using "default" in the cookbook's attributes f
 
 # roles/webserver.rb
 
+    @@@ruby
     name "webserver"
     description "Systems that serve HTTP traffic"
     run_list(
@@ -270,9 +263,9 @@ The `Chef::Node#attribute?` method can be used to check if the node
 has a given attribute. Use it with a top-level key to find sub-keys.
 
     @@@ruby
-    node.attribute?("fqdn") # => true
-    node.attribute?("aaaaa") # => false
-    node['chef_packages'].attribute?("chef") # => true
+    node.attribute?('fqdn') # => true
+    node.attribute?('aaaaa') # => false
+    node['chef_packages'].attribute?('chef') # => true
 
 # Run List
 
@@ -282,10 +275,10 @@ The run list is expanded during run time to determine the cookbooks to
 download (by recipe name).
 
 The expanded list of roles are stored in the attribute
-`node["roles"]`.
+`node['roles']`.
 
 The expanded list of recipes are stored in the attribute
-`node["recipes"]`.
+`node['recipes']`.
 
 Recipes that are included via `include_recipe` method are *not* expanded.
 
@@ -305,7 +298,7 @@ The `Chef::Node#role?` method will check if the node's run list has
 the specified role.
 
     @@@ruby
-    node.role?("base")
+    node.role?('base5')
 
 # Node recipe? method
 
@@ -317,17 +310,6 @@ node's run state is checked for recipes Chef has seen via `include_recipe`.
 
     @@@ruby
     node.recipe?("webserver")
-
-# Node Run State
-
-When Chef runs, it stores ephemeral information about the node in the
-`run_state`. This is per-run data that is not persisted to the Chef
-Server.
-
-`run_state` is a method of the node object that returns its contents.
-
-An example of content in the run state is the list of recipes that
-Chef has seen as they are loaded.
 
 # Chef Environment
 
@@ -353,35 +335,36 @@ Use `knife node list` to list all the node objects on the Chef Server.
 
 Use `knife node show` to display a node object on the Chef Server.
 
-    > knife node show i-2b58ad4a
-    Node Name:   i-2b58ad4a
-    Environment: _default
-    FQDN:        domU-12-31-39-07-D5-65.compute-1.internal
-    IP:          107.20.14.15
-    Run List:    role[base], role[webserver]
-    Roles:       base, webserver
-    Recipes:     apt, chef-client, webserver
-    Platform:    ubuntu 10.04
+    > knife node show cheftrain01.marshall.edu
+    Node Name:   cheftrain01.marshall.edu
+    Environment: test
+    FQDN:        cheftrain01.marshall.edu 
+    IP:          10.101.6.181
+    Run List:    role[cheftrain] 
+    Roles:       cheftrain, chef_client
+    Recipes:     chef-client::config
+    Platform:    centos 6.0
 
 # Examining Chef::Node
 
 `knife node show` has several options to modify the output of the node
 object. We can show only the run list:
 
-    > knife node show i-2b58ad4a -r
+    > knife node show cheftrain01.marshall.edu -r
     run_list:
-        role[base]
-        role[webserver]
+        role[cheftrain]
 
 The Chef environment:
 
-    > knife node show -E i-2b58ad4a
-    chef_environment:  _default
+    > knife node show -E cheftrain01.marshall.edu
+    chef_environment:  test
 
 Or a specific attribute:
 
-    > knife node show i-2b58ad4a -a ec2.public_hostname
-    ec2.public_hostname:  ec2-107-20-14-15.compute-1.amazonaws.com
+    > knife node show cheftrain01.marshall.edu -a virtualization 
+    virtualization: 
+      role:    guest
+      system:  vmware
 
 # Examining Chef::Node
 
@@ -390,9 +373,9 @@ a bit nicer for humans to read. Show the data in another format with
 `-F` and specify a format. Valid alternate formats are JSON ("j"),
 YAML ("y") or Text (default, or "t")
 
-    > knife node show i-2b58ad4a -Fj
-    > knife node show i-2b58ad4a -r -Fj
-    > knife node show i-2b58ad4a -a ec2 -Fj
+    > knife node show cheftrain01.marshall.edu -Fj
+    > knife node show cheftrain01.marshall.edu -r -Fj
+    > knife node show cheftrain01.marshall.edu -a virtualization -Fj
 
 # Examining Chef::Node in Shef
 
@@ -404,7 +387,7 @@ startup, including attributes from Ohai.
     loading configuration: none (standalone shef session)
     Session type: standalone
     ...
-    Ohai2u jtimberman@localhost.localdomain!
+    Ohai2u wolfe21@localhost.localdomain!
     chef >
 
 # Chef::Node in Shef
@@ -441,7 +424,6 @@ Show some attributes about the node:
 
 * Properties of the Chef::Node object
 * Common attributes from ohai
-* Original location of node attributes
 * Node's run list
 * Methods available in recipes
 * Use `knife` and `shef` to examine nodes
@@ -455,13 +437,12 @@ Show some attributes about the node:
 * When should attributes be set from a recipe?
 * Are recipes included with `include_recipe` in the `node["recipes"]` attribute?
 * What order are recipes applied to the node by Chef?
-* What is the node's run state? Is it saved on the server?
 
 # Additional Resources
 
-* http://wiki.opscode.com/display/chef/Nodes
-* http://wiki.opscode.com/display/chef/Attributes
-* http://wiki.opscode.com/display/chef/Environments
+* [http://wiki.opscode.com/display/chef/Nodes](http://wiki.opscode.com/display/chef/Nodes)
+* [http://wiki.opscode.com/display/chef/Attributes](http://wiki.opscode.com/display/chef/Attributes)
+* [http://wiki.opscode.com/display/chef/Environments](http://wiki.opscode.com/display/chef/Environments)
 
 # Lab Exercise
 

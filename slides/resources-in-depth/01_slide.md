@@ -45,7 +45,7 @@ Two other contexts are available.
     chef > attributes
     chef:attributes >
 
-`recipes` is the context of the Chef Recipe DSL.
+`recipe` is the context of the Chef Recipe DSL.
 
     chef > recipe
     chef:recipe >
@@ -100,17 +100,6 @@ The action, if specified, **must** begin with a colon (Ruby symbol).
 
 .notes We will come back to this very shortly.
 
-# Common Resources
-
-By the 80/20 rule, you'll use a small subset of the available Chef
-resources most of the time.
-
-* File management
-* Packages
-* Users and Groups
-* Services/daemons
-* Executable programs
-
 # File management
 
 Configuration management often entails writing configuration files, so
@@ -130,8 +119,7 @@ When managing file contents, Chef uses SHA-256 checksums on the target
 file content to determine if a file should be updated. If the checksum
 of the content matches, Chef makes no further changes.
 
-`file` (with `content` parameter), `cookbook_file`, `remote_file` and
-`template` resources all use checksums.
+`file`, `cookbook_file`, `remote_file` and `template` resources all use checksums.
 
 .notes SHA-256 was chosen because no known collisions have been found. MD5
 has known published collision attacks, as does SHA-0. SHA-1 has
@@ -160,15 +148,13 @@ Type this into your Shef session (recipe context):
       group "root"
       mode 0644
     end
+    run_chef
 
 * path - name attribute, target file path on the system
 * owner - user that should own the file, default is user running chef
 * group - group that should own the file, default is group running chef
 * mode - octal mode of the file, specify as a number with a leading 0,
   or as a string, default is the umask of the chef process
-
-# file parameters
-
 * content - a string to write to the file, overwrites existing content
 * backup - number of backups to keep, default is 5
 
@@ -208,12 +194,13 @@ source URI.
 
 # remote_file example
 
+Type this into your Shef session (recipe context):
+
     @@@ruby
-    remote_file "/tmp/chef-install.sh" do
-      source "http://opscode.com/chef/install.sh"
-      mode 0755
-      checksum "3dd0daa5"
+    remote_file "/tmp/favicon.ico" do
+      source "http://www.marshall.edu/favicon.ico"
     end
+    run_chef
 
 * path - name attribute, the target file to write
 * source - the URI of the file to download
@@ -315,10 +302,13 @@ The default action is to create the link.
 
 The equivalent of running `ln -s /etc/hosts /tmp/hosts`:
 
+Type this into your Shef session (recipe context):
+
     @@@ruby
     link "/tmp/hosts" do
       to "/etc/hosts"
     end
+    run_chef
 
 * target_file - the file name of the link
 * to - the real target file
@@ -338,15 +328,18 @@ The default action is to create the specified directory.
 
 # directory example
 
+Type this into your Shef session (recipe context):
+
     @@@ruby
     directory "/var/cache/chef" do
       mode 0755
     end
 
     directory "/var/www/sites/mysite" do
-      owner "www-data"
+      owner "apache"
       recursive true
     end
+    run_chef
 
 * path - name attribute, the target path of the directory
 * mode, owner, group - work like the `file` resource (but directory
@@ -401,31 +394,15 @@ The default action is to install the named package.
 
 # package examples
 
-    @@@ruby
-    package "apache2"
+Type this into your Shef session (recipe context):
 
-    package "apache2" do
-      version "2.2.14-5ubuntu8.7"
-    end
+    @@@ruby
+    package "httpd"
+    run_chef
 
 * package_name - name attribute, name of the package
 * version - specific version to install, uses the latest version
   detected by the provider (e.g., apt cache or yum repo data)
-
-# Additional package examples
-
-    @@@ruby
-    package "apache2" do
-      package_name "httpd"
-    end
-
-    package "apache2" do
-      action :upgrade
-    end
-
-    package "portmap" do
-      action :remove
-    end
 
 .notes Be aware of removing packages that have dependencies, as Chef
 may not be able to determine all the correct dependency resolution on
@@ -438,29 +415,9 @@ determined by the node's platform:
 
 * `apt_package` - Debian/Ubuntu
 * `yum_package` - RHEL/CentOS/Fedora/Amazon
-* `macports_package` - Mac OS X
-* `freebsd_package` - FreeBSD (ports system)
-* `pacman_package` - Archlinux
-* `portage_package` - Gentoo
-
-# Package Providers
-
 * `dpkg_package` - install a .deb
 * `rpm_package` - install a .rpm
 * `gem_package` - RubyGems
-* `easy_install_package` - Python easy-install
-
-.notes dpkg requires that the file is downloaded to the local system.
-rpm can retrieve over HTTP just like the rpm command, but it will not
-follow redirects properly; e.g., EPEL RPMs.
-
-# Cookbook Package Resources
-
-* `homebrew_package` - homebrew cookbook, sets OS X default provider
-  to [homebrew](http://mxcl.github.com/homebrew/).
-* `dmg_package` - dmg cookbook, for OS X
-* `pacman_aur`, `pacman_group` - pacman cookbook, for Archlinux
-* `python_pip` - python cookbook, use pip instead of `easy-install`
 * `windows_package` - windows cookbook, for Windows systems
 
 Complete list provided by Opscode published cookbooks:
@@ -484,19 +441,9 @@ different providers.
 
 The default action for both resources is to create the named group or user.
 
-# group example
-
-    @@@ruby
-    group "admins" do
-      gid 999
-      members ['joe', 'alice']
-    end
-
-* gid - the numeric group id
-* members - the list of users that should be members of the group
-* append - the members will be appended to an existing group
-
 # user example
+
+Type this into your Shef session (recipe context):
 
     @@@ruby
     user "joe" do
@@ -507,6 +454,7 @@ The default action for both resources is to create the named group or user.
       uid 1002
       supports :manage_home => true
     end
+    run_chef
 
 * username - name attribute, name of the user
 * comment - GECOS field or user comment
@@ -517,44 +465,20 @@ The default action for both resources is to create the named group or user.
 * supports - (Array) indicate that the useradd command supports
   managing the user home directory, e.g. "-m"
 
-# system user example
+# group example
+
+Type this into your Shef session (recipe context):
 
     @@@ruby
-    user "myapp" do
-      system true
-      comment "my appliation user"
-      shell "/bin/false"
+    group "admins" do
+      gid 999
+      members ['joe', 'wolfe21-a']
     end
+    run_chef
 
-* system - creates a "system" user assigning a UID per the platorm's
-  OS policy for user creation (e.g., `/etc/login.defs`).
-
-# user passwords
-
-Chef can manage the user's password as well. The local installation of
-Ruby must have Shadow password support on Unix/Linux systems. This is
-available in the full-stack installer by installing the `ruby-shadow`
-RubyGem, as Ruby 1.9 removed it from the standard library.
-
-Passwords must be supplied using the correct password hashing for the
-underlying OS. For example, generate an MD5 hashed password with openssl:
-
-    openssl passwd -1 "theplaintextpassword"
-
-# user password example
-
-    @@@ruby
-    user "joe" do
-      comment "Joe User"
-      shell "/bin/bash"
-      home "/home/joe"
-      gid "users"
-      uid 1002
-      password "$1$JJsvHslV$szsCjVEroftprNn4JHtDi."
-    end
-
-.notes This does not have to be repeated from the earlier example,
-especially all the typing of that obnoxious password.
+* gid - the numeric group id
+* members - the list of users that should be members of the group
+* append - the members will be appended to an existing group
 
 # Services/daemons
 
@@ -571,11 +495,14 @@ of what it means to say you have a service resource to manage.
 
 # service example
 
+Type this into your Shef session (recipe context):
+
     @@@ruby
-    service "apache2" do
+    service "httpd" do
       supports :status => true
-      action :enable
+      action [ :enable, :start ]
     end
+    run_chef
 
 * supports - a metaparameter specially supported by service providers,
   in this case indicates that the init script can take a "status"
@@ -608,14 +535,14 @@ A common way to start a service is to issue a `:restart` action through
 resource notification.
 
     @@@ruby
-    service "apache2" do
+    service "httpd" do
       supports :restart => true
       action :enable
     end
 
-    template "/etc/apache2/apache2.conf" do
+    template "/etc/httpd/httpd.conf" do
       # ... other parameters
-      notifies :restart, "service[apache2]"
+      notifies :restart, "service[httpd]"
     end
 
 # Notifications
@@ -632,8 +559,9 @@ will focus on `notifies`. The take the following form:
     end
 
 If `resource[my-name]` changes (such as a template being rendered),
-then `:action` will be sent to `type[their-name]`. The `:timing` can
-be `:delayed` (default if not specified) or
+then `:action` will be sent to `type[their-name]`.
+
+The `:timing` can be `:delayed` (default if not specified) or
 `:immediately`. Notifications are queued, and happen only one time.
 
 .notes Child A, go tell this message (action) to your sibling
@@ -641,19 +569,19 @@ be `:delayed` (default if not specified) or
 
 # Starting services
 
-If the `template[/etc/apache2/apache2.conf]` resource changes, it will
-cause the `apache2` service to be restarted. If it were *not* already
+If the `template[/etc/httpd/httpd.conf]` resource changes, it will
+cause the `httpd` service to be restarted. If it were *not* already
 running, this usually means it will be started.
 
     @@@ruby
-    service "apache2" do
+    service "httpd" do
       supports :restart => true
       action :enable
     end
 
-    template "/etc/apache2/apache2.conf" do
+    template "/etc/httpd/httpd.conf" do
       # ... other parameters
-      notifies :restart, "service[apache2]"
+      notifies :restart, "service[httpd]"
     end
 
 # Restarting services
@@ -669,7 +597,7 @@ stop and start commands.
 If the parameter `supports :restart => true` is set, then Chef will
 use the `restart` command for the service.
 
-    sudo /usr/sbin/invoke-rc.d apache2 restart
+    sudo /usr/sbin/invoke-rc.d httpd restart
 
 # Reloading services
 
@@ -677,7 +605,7 @@ You can reload services using their init script's reload command, but
 only if the service resource supports reload:
 
     @@@ruby
-    service "apache2" do
+    service "httpd" do
       supports :reload => true
     end
 
@@ -766,15 +694,17 @@ the command is 0. A ruby block will be evaluated as ruby code for `true`/`false`
 
 # Conditional execution
 
+Type this into your Shef session (recipe context):
+
     @@@ruby
-    execute "setenforce 1" do
-      not_if "getenforce | grep -qx 'Enforcing'"
+    execute 'setenforce 0' do
+      not_if { 'getenforce | grep -q Disabled' }
     end
 
-    execute "apt-get update" do
-      not_if { ::File.exists?('/var/lib/apt/periodic/update-success-stamp') }
-      action :nothing
+    execute 'yum -y upgrade' do
+      not_if { 'yum check-update' }
     end
+    run_chef
 
 .notes We use the :: in front of File due to Ruby namespacing. A
 common guard is "grep -q" or even "grep -qx".
@@ -798,7 +728,6 @@ Full exploration of application deployment is beyond the scope of this course.
 
 * `cron` - creates crontab entry
 * `env` - sets system-wide Windows ENV variables (Windows only at this time)
-* `erl_call` - make a call to an Erlang process
 * `http_request` - makes an HTTP request, useful for interacting with
   HTTP-based APIs
 
@@ -822,29 +751,6 @@ Full exploration of application deployment is beyond the scope of this course.
 * `ohai` - reloads node's automatic attributes, e.g. after deploying a
   new ohai plugin
 
-# Advanced resources
-
-* `breakpoint` - sets a breakpoint used by shef
-* `ruby_block` - executes a block of Ruby code, not the same as the
-  ruby script provider
-
-.notes A ruby block can be used to promote execution from the compile
-phase into the "execution" phase. Between these two, students will see
-(and use) `ruby_block` most often.
-
-# Running Chef
-
-If we did kick off a Chef run (enter the execution phase), then all
-the resources entered to this point would be configured as we wrote
-them.
-
-Many of the resource examples we used are incomplete - we do not have
-source files for some of the templates and cookbook_files.
-
-Chef will halt execution when it encounters an unhandled exception.
-
-.notes the `shef` command to enter the execution phase is `run-chef`.
-
 # Summary
 
 * Understand the components of resources.
@@ -863,7 +769,7 @@ Chef will halt execution when it encounters an unhandled exception.
 
 # Additional Resources
 
-* http://wiki.opscode.com/display/chef/Resources
+* [http://wiki.opscode.com/display/chef/Resources](http://wiki.opscode.com/display/chef/Resources)
 
 # Lab Exercise
 

@@ -4,21 +4,10 @@ Section Objectives:
 
 * Learn where Ruby is installed
 * Understand basic Ruby data types
-* Understand some of the common Ruby objects used in Chef
 * Familiarity with the ways Chef uses Ruby for DSLs
 
 .notes These course materials are Copyright © 2010-2012 Opscode, Inc. All rights reserved.
 This work is licensed under a Creative Commons Attribute Share Alike 3.0 United States License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/us; or send a letter to Creative Commons, 171 2nd Street, Suite 300, San Francisco, California, 94105, USA.
-
-# What is Ruby?
-
-Ruby is an object oriented programming language.
-
-The most common implementation is MRI, Matz Ruby Interpreter, named
-after the language's inventor.
-
-This section does not comprehensively cover Ruby. It will familiarize
-you with the syntax and idioms used by Chef.
 
 # How does Chef Use Ruby?
 
@@ -77,7 +66,7 @@ Strings are the most common Ruby data type used in Chef.
 
 # Code Substitution
 
-Within a string, code can be substituted with the `#{}` notation.
+Within a string, variables and attributes can be concatenated with the `#{}` notation.
 
     @@@ ruby
     code_sub = "code substitution"
@@ -90,7 +79,7 @@ This is often done in Chef to use node attributes:
 
 # Numbers
 
-Ruby supports integers an floating point numbers.
+Ruby supports integers and floating point numbers.
 
     @@@ ruby
     cpus = 2
@@ -212,6 +201,7 @@ Ruby blocks are code statements between braces or a do/end pair.
 
     @@@ ruby
     my_array.each {|i| puts i}
+
     my_array.each do |i|
       puts i
     end
@@ -220,19 +210,18 @@ Common convention is to use braces for a single line, and do/end for multiple li
 
 # Enumerables
 
-Array and Hash mix-in the Enumerable class. It contains a number
+Array and Hash are Enumerable classes. They contains a number
 of helper methods, such as `.each` or `.map` that are particularly
 useful in Chef.
 
     @@@ ruby
     %w{ apache mysql php }.each do |pkg|
       package pkg do
-        action :upgrade
+        action :install
       end
     end
 
-We do this often in Chef to handle creating the same kind of resource
-without having to type the resource multiple times.
+Looping is often used in Chef to simplify code, and avoid repetition.
 
 # Where does Chef use Ruby?
 
@@ -246,15 +235,6 @@ Chef uses Ruby for a number of Domain Specific Languages.
 .notes This is an overview, not a comprehensive section on these
 topics, they have their own corresponding sections.
 
-# Chef Ruby Objects
-
-We use a number of Chef's Ruby objects within Recipes. The three most
-common objects are:
-
-* `Chef::Node`, via `node`
-* `Chef::Config`, a hash-like structure containing configuration.
-* `Chef::Log`, send log messages
-
 # Chef::Node
 
 The `node` object is available anywhere Ruby is used. Attributes are
@@ -267,47 +247,10 @@ accessed like Ruby hash keys:
 
 Some parts of the node object are accessed with method calls.
 
-# Chef::Config
-
-The `Chef::Config` object is available within recipes so behavior can
-be modified depending on how Chef itself is configured.
-
-Commonly, we use `Chef::Config[:file_cache_path]` as a "temporary"
-location to download files such as software tarballs.
-
-    @@@ ruby
-    remote_file "#{Chef::Config[:file_cache_path]}/mystuff.tar.gz" do
-      source "http://example.com/mystuff.tar.gz"
-    end
-
-# Chef::Config
-
-Since `chef-solo` behaves differently, it may be desirable to account
-for it in recipes, particularly those that use Chef Server-specific
-features such as search.
-
-The value `Chef::Config[:solo]` will only be true if Chef was invoked
-with `chef-solo`.
-
-    @@@ ruby
-    unless Chef::Config[:solo] # if we're not using solo...
-      results = search(:node, "role:webserver") # perform search
-    end
-
-# Chef::Log
-
-Log messages using Chef's logger can be displayed with `Chef::Log`.
-The different levels of log output are specified by calling the
-appropriate method.
-
-    Chef::Log.info("INFO level message")
-    Chef::Log.debug("DEBUG level message")
-
 # Summary
 
 * Learn where Ruby is installed
 * Understand basic Ruby data types
-* Understand some of the common Ruby objects used in Chef
 * Familiarity with the ways Chef uses Ruby for DSLs
 
 # Additional Resources

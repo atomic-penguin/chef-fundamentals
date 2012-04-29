@@ -333,7 +333,6 @@ The Chef Server message will indicate what the likely cause is.
 
 Common causes:
 
-* ACL on Opscode Hosted Chef
 * Timeout retrieving files from S3 or other transient S3 error.
 * Creating a data bag item when the bag doesn't exist
 * Attempting to create an API Client that exists
@@ -368,21 +367,6 @@ errors can cause a 500 error.
 
 Otherwise, something on the server backend had an error that wasn't
 handled.
-
-* Opscode's operations staff is notified on 500's.
-* We investigate and resolve these as quickly as possible.
-
-# 503 Service Unavailable
-
-Occasionally, Opscode will perform maintenance on Hosted Chef. For
-example we recently did a data center migration.
-
-If you see a 503 and weren't expecting it, check
-[status.opscode.com](http://status.opscode.com).
-
-If you need help, open a ticket at
-[help.opscode.com](http://help.opscode.com) or email
-[support@opscode.com](mailto:support@opscode.com).
 
 # Running a Chef Server
 
@@ -440,89 +424,12 @@ Full coverage of the topic is beyond the scope of a "Fundamentals"
 course. The Chef wiki has an
 [entire page documenting the API](http://wiki.opscode.com/display/chef/Exception+and+Report+Handlers).
 
-We'll take a brief look at the requirements to set up a handler.
-
-# Handler Configuration
-
-Chef has two configuration options for setting up a new
-report/exception handler.
-
-* `report_handlers`
-* `exception_handlers`
-
-These are both Arrays, to which new instantiation of the handler
-classes are added.
-
-# Simple Example Handler
-
-We're going to set up a very simple example that prints the name of
-the resources updated in the Chef run.
-
-The handler itself doesn't actually do anything, but it could.
-
-Handlers are written in Ruby and loaded by the `chef-client` when it runs.
-
-# Handler Example Code
-
-We'll put this in `/var/chef/handlers/simple_report_handler.rb`, but
-it can go anywhere.
-
-    @@@ruby
-    require 'chef/handler'
-    module SimpleReport
-      class UpdatedResources < Chef::Handler
-        def report
-          Chef::Log.info "Resources updated this run:"
-          run_status.updated_resources.each {|r| Chef::Log.info "  #{r.to_s}"}
-        end
-      end
-    end
-
-The handler should inherit `Chef::Handler`. It should define a 'report' method.
-
-Documentation is on the [Chef wiki](http://wiki.opscode.com/display/chef/Exception+and+Report+Handlers).
-
-.notes This specific handler can be installed with the ruby gem
-"chef-handler-updated-resources".
-
-# Handler Configuration
-
-    @@@ruby
-    # /etc/chef/client.rb...
-    #
-    # a file dropped off by cookbook_file:
-    require '/var/chef/handlers/simple_report_handler'
-
-    report_handlers << SimpleReport::UpdatedResources.new
-    exception_handlers << SimpleReport::UpdatedResources.new
-
-.notes The 'require' statement does not use the .rb extension of the
-file.
-
-# Chef Handler Cookbook
-
-Opscode released a cookbook to make managing report handlers easier.
-
-* http://community.opscode.com/cookbooks/chef_handler
-
-Download it to your Chef Repository like any other cookbook:
-
-    knife cookbook site download chef_handler
-    tar -zxvf chef_handler-1.0.0.tar.gz -C cookbooks
-
-See the cookbook's README for documentation.
-
-.notes Opscode is working on API endpoints to send reports/exceptions,
-but this is not built into the Chef Client or the Chef Handler
-cookbook at this time.
-
 # Summary
 
 * Work with Chef's logger
 * Debug Chef's stack traces
 * Recognize HTTP status codes from the Chef Server
 * Gracefully handle errors in recipes
-* Understand Chef's report/exception handlers
 
 # Questions
 
@@ -533,15 +440,10 @@ cookbook at this time.
 * What is the workflow for correcting cookbook errors?
 * What often causes a 401 error?
 * How can a 412 error be resolved?
-* Describe the report/exception handling feature of Chef.
 
 # Additional Resources
 
-* http://wiki.opscode.com/display/chef/Common+Errors
-* http://wiki.opscode.com/display/chef/Exception+and+Report+Handlers
-* http://wiki.opscode.com/display/chef/Troubleshooting+and+Technical+FAQ
-* http://help.opscode.com/ or support@opscode.com
-* http://lists.opscode.com
-
-Several existing handlers are available on the Exception and Report
-Handlers page linked above.
+* [http://wiki.opscode.com/display/chef/Common+Errors](http://wiki.opscode.com/display/chef/Common+Errors)
+* [http://wiki.opscode.com/display/chef/Exception+and+Report+Handlers](http://wiki.opscode.com/display/chef/Exception+and+Report+Handlers)
+* [http://wiki.opscode.com/display/chef/Troubleshooting+and+Technical+FAQ](http://wiki.opscode.com/display/chef/Troubleshooting+and+Technical+FAQ)
+* [http://lists.opscode.com](http://lists.opscode.com) or [Freenode #chef](irc://irc.freenode.net:6667/chef)

@@ -28,12 +28,12 @@ The `roles` directory in the chef-repo contains the roles for the infrastructure
 
 Write roles using a Ruby DSL.
 
-    $EDITOR roles/base.rb
+    $EDITOR roles/base5.rb
 
 Upload the roles to the Chef Server. Knife will automatically look for
 the specified file in the `roles` directory.
 
-    knife role from file base.rb
+    knife role from file base5.rb
 
 Roles are converted to JSON on the server.
 
@@ -55,32 +55,28 @@ What kind of roles do we need?
 
 * `base` role.
 * per-service roles.
-* platform roles.
+* platform specific roles.
 
-# Base Role
+# Base5 Role
 
-We use a role called `base` that gets applied to every system in the infrastructure.
+We use a role called `base5` that gets applied to every RHEL 5, or RHEL 6, system in the infrastructure.
 
 This contains the basics that all systems should have.
 
-# roles/base.rb
+# roles/base5.rb
+
+The following is an oversimplified excerpt of the `base5` role.
 
     @@@ruby
-    name "base"
-    description "Base role applied to all nodes."
-
-    run_list(
-      "recipe[chef-client]",
-      "recipe[fail2ban]",
-      "recipe[users]"
-    )
-
-    default_attributes(
-      "chef_client" => {
-        "server_url" => "https://api.opscode.com/organizations/ORGNAME",
-        "validation_client_name" => "ORGNAME-validator"
-      },
-    )
+    name "base5"
+    description "Contains run list which is safe to run on all servers."
+    override_attributes "inittab" => {
+      "runlevel" => "3"
+    },
+    "logwatch" => {
+      "mailto" => "logwatch@marshall.edu"
+    },
+    run_list "recipe[inittab]", "recipe[users::itisystems]", "recipe[logwatch]"
 
 # Per-service Roles
 
@@ -165,7 +161,7 @@ attributes.
 
 Use knife:
 
-    knife node run list add NODE 'role[base]'
+    knife node run list add NODE 'role[base5]'
 
 # Summary
 

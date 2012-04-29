@@ -35,10 +35,7 @@ Create a new cookbook in the `cookbooks` directory. The content of the
 recipe and metadata.rb don't matter right now, they just need to
 exist.
 
-    mkdir cookbooks/webserver
-    mkdir cookbooks/webserver/recipes
-    touch cookbooks/webserver/recipes/default.rb
-    touch cookbooks/webserver/metadata.rb
+    knife cookbook create helloworld 
 
 .notes It is worth noting that the metadata OR recipes can be absent,
 but not both. The cookbook must have one or the other for knife to
@@ -66,11 +63,11 @@ Metadata serves two purposes.
 
 Cookbook metadata contains documentation about the cookbook itself.
 
-    maintainer       "Opscode, Inc."
-    maintainer_email "cookbooks@opscode.com"
+    maintainer       "Eric G. Wolfe"
+    maintainer_email "wolfe21@marshall.edu"
     license          "apachev2"
-    description      "Configures web servers"
-    long_description "Configures web servers with a cool recipe"
+    description      "Configures Kerberos v5"
+    long_description "Configures and installs Kerberos v5 components"
 
 # Metadata Dependency Management
 
@@ -159,7 +156,7 @@ section, "Just Enough Ruby for Chef"
 
 Nodes have a list of recipes they will run.
 
-This run list can include recipes that also include other recipes.
+This run list can include recipes which include other recipes.
 
 These are applied to the node in the order listed.
 
@@ -278,14 +275,13 @@ over the place.
 Use a version control system for your Chef Repository where the
 cookbooks are stored.
 
-Community best practice is Git. However, other DVCS are common. Use
-the preferred tool for your organization.
-
-It is beyond the scope of this course to discuss version control
-strategies in depth.
+Community best practice and the preference at Marshall is Git.
 
 Storing a cookbook in version control does not make it available to
-Chef. It must be uploaded to the Chef Server.
+Chef. It must be uploaded to the Chef Server with Knife.
+
+The purpose of using a version control system is to track historical
+changes over a period of time.
 
 # Nodes and Chef Server
 
@@ -328,35 +324,36 @@ Are equivalent. To use a different recipe, specify it by name:
 Use knife to add a recipe to an existing node's run list on the Chef
 Server.
 
-    knife node run list add NODE 'recipe[webserver]'
+    knife node run list add cheftrain01.marshall.edu 'recipe[webserver]'
 
-Use quotes to prevent shell meta-character expansion.
+Use quotes to prevent shell expansion.
 
 Run Chef on the node and it will apply the recipe.
 
 # Add Recipe to a Node
 
-If the node does not exist on the Chef Server already, the run list
-can be specified by passing a JSON file with `chef-client -j
-FILE.json`.
+The preferred way to update a node at Marshall is by creating
+a json file in the chef-repo/nodes directory.
 
     @@@ javascript
     {
+      "name": "cheftrain01.marshall.edu",
+      "json_class": "Chef::Node",
       "run_list": [
         "recipe[webserver]"
-      ]
+      ],
+      "chef_type": "node"
     }
 
-# Chef Community Cookbooks
+# Add Node to a chef-server
 
-Opscode hosts the Chef Community site where Chef users share
-cookbooks:
+Once the node json file has been created, one may upload it with the command.
 
-* [http://community.opscode.com/](http://community.opscode.com/)
+    knife node from file nodes/cheftrain01.marshall.edu
 
-Knife includes sub-commands for working with the site.
+Or by using the following command you can create a new node from a template with knife.
 
-    knife cookbook site --help
+    knife node edit cheftrain01.marshall.edu
 
 # Summary
 
