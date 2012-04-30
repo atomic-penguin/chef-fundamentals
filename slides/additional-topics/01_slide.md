@@ -63,8 +63,8 @@ common use cases we practice or have seen:
 
 * User management
 * Application information
-* Hardware inventory
-* Authentication credentials
+* X.509 Certificates and RSA keys
+* DNS Zone information 
 
 # Encrypted Data Bags
 
@@ -103,8 +103,7 @@ Search can be done just like nodes or roles with knife or in a recipe.
     knife search BAG QUERY
     search(:bag, "QUERY")
 
-Encrypted data bags cannot be searched because the contents are...
-encrypted.
+Encrypted data bags can only be searched by unencrypted keys, like `id`.
 
 # Search Data Bags: Knife
 
@@ -144,7 +143,7 @@ Environments are used to enforce cookbook version constraints based on
 logical infrastructure environments.
 
 Different logical environments in the infrastructure may include
-"production," "staging," "development" and so on.
+"production," "preprod," "test" and so on.
 
 Environments are assigned to nodes. They are managed as separate
 entities on the Chef Server.
@@ -172,6 +171,7 @@ Version Constraint documentation.
 
 # Example Environment
 
+    @@@ruby
     name "production"
     description "Systems in production"
     cookbook_versions(
@@ -190,6 +190,7 @@ constraints cannot be applied to the `_default` environment.
 Searches can be constrained to the node's environment with a boolean
 operator in the query.
 
+    @@@ruby
     search(:node, "platform:ubuntu AND chef_environment:production")
 
 # Environments: Configuration
@@ -200,10 +201,13 @@ setting.
 This can be passed to the `chef-client` command through the `-E`
 option.
 
-It can be set directly in the `/etc/chef/client.rb` configuration
-file.
+We typically set the environment on the node, before a client is
+first bootstrapped with Chef.
 
-    environment "production"
+    @@@javascript
+    {
+      "chef_environment": "production"
+    }
 
 # Environments: Knife
 
@@ -217,12 +221,7 @@ In the Chef Repository, environments are Ruby DSL or JSON files in the
     > knife environment --help
     > knife environment from file production.rb
 
-Similar to roles, pick your file workflow between Ruby or JSON.
-
-Knife bootstrap can set the node's environment at the first Chef run
-with the `-E` option.
-
-    > knife bootstrap IPADDRESS -E 'production'
+Similar to roles, we use a Ruby file workflow with environments. 
 
 # Environments: Recipes
 
@@ -251,15 +250,15 @@ Lightweight resources and providers are automatically loaded from the
 `resources` and `providers` directories from the cookbook.
 
 They are named by joining the cookbook name and the file name. For
-example, the `apt` cookbook contains:
+example, the `yum` cookbook contains:
 
-    apt/resources
+    yum/resources
     -> repository.rb
 
-    apt/providers
+    yum/providers
     -> repository.rb
 
-The resource used in a recipe is `apt_repository`. If the Ruby file
+The resource used in a recipe is `yum_repository`. If the Ruby file
 name is `default.rb` then just the cookbook name is used.
 
 # When to Use LWRPs
@@ -293,9 +292,8 @@ Cloud Computing providers like Amazon EC2.
 
 # Additional Resources
 
-* http://wiki.opscode.com/display/chef/Data+Bags
-* http://wiki.opscode.com/display/chef/Environments
-* http://wiki.opscode.com/display/chef/Version+Constraints
-*
-  http://wiki.opscode.com/display/chef/Lightweight+Resources+and+Providers+%28LWRP%29
-* http://wiki.opscode.com/display/chef/Knife+Plugins
+* [http://wiki.opscode.com/display/chef/Data+Bags](http://wiki.opscode.com/display/chef/Data+Bags)
+* [http://wiki.opscode.com/display/chef/Environments](http://wiki.opscode.com/display/chef/Environments)
+* [http://wiki.opscode.com/display/chef/Version+Constraints](http://wiki.opscode.com/display/chef/Version+Constraints)
+* [http://wiki.opscode.com/display/chef/Lightweight+Resources+and+Providers+%28LWRP%29](http://wiki.opscode.com/display/chef/Lightweight+Resources+and+Providers+%28LWRP%29)
+* [http://wiki.opscode.com/display/chef/Knife+Plugins](http://wiki.opscode.com/display/chef/Knife+Plugins)

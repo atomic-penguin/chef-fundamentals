@@ -87,32 +87,26 @@ service.
 For example, it is common in a web-application architecture to have
 webservers.
 
-# roles/webserver.rb
+# roles/krb5.rb
 
     @@@ruby
-    name "webserver"
-    description "Systems that serve HTTP traffic"
-    run_list(
-      "recipe[apache2]",
-      "recipe[apache2::mod_ssl]"
-    )
-    default_attributes(
-      "apache" => {
-        "listen_ports" => [ 80, 443 ]
-      }
-    )
+    name "krb5"
+    description "Configures Kerberos 5 Authentication"
+    override_attributes "krb5" => {
+      "default_realm_kdcs" => [ "mudc01.marshall.edu", "mudc03.marshall.edu" ]
+    }
+    run_list "recipe[krb5]"
 
 # Per-service Roles
 
 We create separate roles that are service specific. This allows us to
 break up services to run on separate hosts, or on a single
-host. Common roles in web applications:
+host. Common roles at MU
 
-* `database_master`
-* `load_balancer`
-* `memcached`
-* `monitoring`
-* `anything_you_want`
+* `oracle`
+* `java`
+* `sudo` recipes
+* override roles such as `cups_client` and `chef_client`
 
 # Platform Roles
 

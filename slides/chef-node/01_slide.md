@@ -49,7 +49,45 @@ commonly:
 * Cookbooks (attributes or recipes)
 * Roles
 
-Other locations are available, but they are out of scope for this course.
+# Node Attributes Diagram
+
+Order of precedence, where Override is highest:
+
+1. Override
+2. Normal or Set
+3. Default
+
+<center><img src="../images/node-attributes.png"/></center>
+
+# Default Attributes Strategy
+
+`Default` attributes may be set in **attributes files**, **recipes**, and **roles**.
+
+It is a good practice to set a sane `Default` in an **attributes file** of a cookbook.
+
+Setting a `Default` should let a cookbook run when shared with another Chef user.
+
+# Set/Normal Attributes Strategy
+
+`Set` or `Normal`, attributes may be set in **attribute files**, **recipes**, **roles**, and **nodes**.
+
+It is a good practice to use `set` in **attribute files**, or `node.set` in **recipe code**, when
+calculated attributes are involved
+
+`Normal` and `Set` variables are two different names for the same thing.
+
+You should avoid Normal variables on the Node, although it is possible.  We use this strategy
+to set unique iptables rules on the node.
+
+# Override Attributes Strategy
+
+`Override` attributes may be set in **attribute files**, **recipes**, and **roles**.
+
+It is a good practice to use `Override` attributes in **roles** to strip out
+MU specific configurations such as IP addresses from your recipes.
+
+This `Override` in **roles** strategy allows us to have sharable generic recipe code,
+and environment specific configurations in a data-driven way.
 
 # Ohai: Automatic Attributes
 
@@ -309,7 +347,7 @@ First, the run list is consulted for the named recipe. Second, the
 node's run state is checked for recipes Chef has seen via `include_recipe`.
 
     @@@ruby
-    node.recipe?("webserver")
+    node.recipe?("apache2")
 
 # Chef Environment
 

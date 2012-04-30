@@ -48,9 +48,9 @@ is abbreviated.
 
 # Knife Search
 
-    knife search node "platform:ubuntu"
-    knife search node "platform:ubuntu" -r
-    knife search node "role:webserver"
+    knife search node "platform:centos"
+    knife search node "platform:redhat" -r
+    knife search node "role:cheftrain"
 
 # Query Syntax
 
@@ -66,7 +66,7 @@ Search patterns can be an exact match, range match or a wildcard match.
 
 # Query Syntax: Exact Match
 
-    knife search node "role:webserver"
+    knife search node "role:cheftrain"
     knife search node "ipaddress:10.1.1.26"
     knife search node "kernel_machine:x86_64"
 
@@ -85,14 +85,14 @@ Range searches are exclusive with curly braces {}.
 
 # Query Syntax: Wildcards
 
-    knife search node "hostname:app*"
-    knife search node "fqdn:app1*.example.com"
+    knife search node "hostname:mu*"
+    knife search node "fqdn:mu*.marshall.edu"
     knife search node "hostname:*"
     knife search node "*:*"
 
-Search for all nodes with hostname starting with "app".
+Search for all nodes with hostname starting with "mu".
 
-Search for all nodes with fqdn that starts with app1 and ends with .example.com
+Search for all nodes with fqdn that starts with mu and ends with .marshall.edu
 
 Search for all nodes that have a hostname at all.
 
@@ -101,7 +101,7 @@ Search for all nodes.
 # Query Syntax: Boolean
 
     knife search node "(NOT cpu_total:1)"
-    knife search node "role:webserver AND chef_environment:production"
+    knife search node "role:cheftrain AND chef_environment:test"
     knife search node "cpu_total:2 OR kernel_machine:x86_64"
 
 Search for all nodes except those with 1 CPU.
@@ -119,7 +119,7 @@ Or, you can run a search and iterate over the results dynamically.
 
 # Assign Results to Variable
 
-    pool = search(:node, "role:webserver")
+    pool = search(:node, "role:cheftrain")
 
 `pool` will be an array of the JSON representation of all the node
 objects that match the search.
@@ -137,7 +137,7 @@ search query. As the `search` results are an array, we can generate
 another array based on a specific condition using the `#map` method
 (from Enumerable).
 
-    ip_addrs = search(:node, "role:webserver").map {|n| n["ipaddress"]}
+    ip_addrs = search(:node, "role:cheftrain").map {|n| n["ipaddress"]}
 
 `ip_addrs` will be an array of the `ipaddress` attribute from all the
 node objects that match the search. Contrast to `pool` from before which
@@ -149,7 +149,7 @@ We can iterate over the search results in real time because search
 takes a block as a parameter.
 
     @@@ruby
-    search(:node, "role:webserver") do |match|
+    search(:node, "role:cheftrain") do |match|
       puts match["ipaddress"]
     end
 
@@ -180,164 +180,33 @@ Knife's status subcommand performs a search and prints out information
 about all the nodes, e.g.:
 
     > knife status
-    1 hour ago, www1, www1.example.com, 10.1.1.20, ubuntu 10.04.
-    1 hour ago, www2, www2.example.com, 10.1.1.21, ubuntu 10.04.
+    1 hour ago, www1, www1.example.com, 10.1.1.20, centos 6.2.
+    1 hour ago, www2, www2.example.com, 10.1.1.21, centos 5.7.
 
 By default it searches for all the nodes, but you can pass it a
 query like with knife search.
 
-    > knife status "role:webserver"
+    > knife status "role:cheftrain"
 
-# Bootstrapping Chef
+# Knife SSH
 
-The process of installing and initially running Chef is referred to as
-"Bootstrapping Chef". The general steps are:
+`knife ssh` is a handy method for running a single command on several servers at once, in parallel.
+This knife subcommand uses a SOLR search string to select nodes on which to operate.
 
-* Update the local system's package cache (OS dependent).
-* Install Ruby and RubyGems.
-* Install Chef as a RubyGem.
-* Copy the validation certificate file.
-* Create a Chef client configuration pointing at the right Chef
-  Server.
-* Create a JSON file with the node's initial Run List.
-* Run Chef using the JSON file.
-
-# Installing and Running Chef
+For example, to check the cheftrain servers for updates, run the following.  Substituting your own
+ssh username with the `-x` switch.
 
     @@@sh
-    curl http://opscode.com/chef/installsh | sudo bash
-    mkdir /etc/chef
-    vi /etc/chef/validation.pem
-    vi /etc/chef/client.rb
-    vi /etc/chef/first-boot.json
+    > knife ssh -x wolfe21-a "role:cheftrain" "sudo yum check-update"
 
-    sudo chef-client -j /etc/chef/first-boot.json
+# Knife SSH
 
-# Bootstrap Sub-command
+This comes in handy to update all servers by chef_environment at once.
 
-Knife bootstrap will run a single script on a target host. It uses
-`knife ssh` under the covers. Instead of a query it uses a manual list.
-
-Uses "bootstrap templates" by name. Several come with Chef.
-
-These are typically used to install Chef on the remote system and tell
-Chef to run with a particular run list.
-
-# Knife Bootstrap Templates
-
-The templates that come with Chef:
-
-* archlinux-gems
-* centos5-gems
-* chef-full
-* fedora13-gems
-* ubuntu10.04-apt
-* ubuntu10.04-gems
-
-The
-[Default Bootstrap Template](https://github.com/opscode/chef/raw/master/chef/lib/chef/knife/bootstrap/chef-full.erb)
-(chef-full, as of Chef 0.10.10+) will install the Chef Full Stack package that we
-have been using. Other bootstrap templates are available.
-
-.notes Chef 0.10.10 may not be released yet, which means we can
-retrieve the raw file directly from the internets and run it as root.
-
-# Knife Bootstrap Customization
-
-The bootstrap "templates" are really just shell scripts.
-
-You can create your own bootstrap templates.
-
-Use `-d` to specify the distribution style.
-
-    ./.chef/bootstrap/DISTRO.erb
-    $HOME/.chef/bootstrap/DISTRO.erb
-
-# Knife Bootstrap
-
-    (
-    cat <<'EOP'
-    <%= config_content %>
-    EOP
-    ) > /etc/chef/client.rb
-
-Bootstrap scripts are processed as ERB templates.
-
-"`config_content`" comes from Bootstrap Context, which is a shortcut to
-using the Chef Config values from Knife.
-
-# Knife Bootstrap Usage
-
-Use the `-d DISTRO` option to specify a different bootstrap template.
-
-    knife bootstrap IPADDRESS -r 'role[webserver]' -x ubuntu -i ~/.ssh/ec2.pem
-
-    knife bootstrap IPADDRESS -r 'role[webserver]' -x ubuntu -i ~/.ssh/ec2.pem -d ubuntu10.04-mine-gems
-
-# Integrate a New Node
-
-Integrating a new node into the infrastructure is easy with knife
-bootstrap.
-
-We'll add a load balancer that will sit in front of the web server.
-
-# Add Load Balancer
-
-Presumably, the new system has been provisioned and has an OS
-installed on it, ready to SSH and be managed with Knife Bootstrap and
-Chef.
-
-During the exercise, the instructor will provide a second remote
-target system that will be used for the load balancer system.
-
-# Load Balancer Cookbook
-
-The load balancer will need a cookbook to install and configure the
-load balancer software.
-
-Haproxy is the load balancer software.
-
-The cookbook is available from the Community Site.
-
-A new role will be created that will be applied with the "knife
-bootstrap" command.
-
-# Load Balancer Role
-
-    @@@ruby
-    name "lb"
-    description "web server load balancer"
-    run_list(
-      "recipe[haproxy::app_lb]"
-    )
-
-The `haproxy::app_lb` recipe will perform a search for web servers.
-
-# Bootstrap Load Balancer
-
-    knife bootstrap IPADDRESS -r 'role[lb]' -x ubuntu --sudo
-
-IPADDRESS is the IP of the target system. We can use FQDN here.
-
-Default Ubuntu installs enable the "ubuntu" user to sudo.
-
-# Haproxy Uses Search
-
-The `app_lb` recipe in the haproxy cookbook uses search. The default
-recipe we looked at in the last section does not.
-
-Any new nodes with "`role[webserver]`" will be automatically detected by
-the load balancer whenever it runs Chef.
-
-The role to use is set by an attribute in the haproxy cookbook. It can
-be modified via a role.
-
-    node['haproxy']['app_server_role']
-
-.notes When growing the infrastructure, new web servers can be created
-with the "webserver" role. Then run chef-client on the load balancer
-node and the new servers will be automatically added to the pool for
-haproxy.
+    @@@sh
+    > knife ssh -x wolfe21-a \
+    "chef_environment:test AND fqdn:cheftrain01.marshall.edu" \
+    "sudo yum -y upgrade"
 
 # Summary
 
@@ -352,23 +221,17 @@ haproxy.
 * What is the search query language used by Chef?
 * What are two search indexes are created by default?
 * How can node searches display only the run list of the results?
-* What are two other knife subcommands that use search? Which is the
-  basis of `knife bootstrap`?
-* What tasks are performed by `knife bootstrap`?
-* How does `knife bootstrap` know what system to connect?
-* How does the haproxy cookbook load balance the web servers? What
-  recipe is used? How is it different from the default?
+* What are two other knife subcommands that use search?
 
 # Additional Resources
 
-* http://wiki.opscode.com/display/chef/Search
-* http://wiki.opscode.com/display/chef/Knife+Bootstrap
-* http://wiki.opscode.com/display/chef/Knife+Built+In+Subcommands
+* [http://wiki.opscode.com/display/chef/Search](http://wiki.opscode.com/display/chef/Search)
+* [http://wiki.opscode.com/display/chef/Knife+Built+In+Subcommands](http://wiki.opscode.com/display/chef/Knife+Built+In+Subcommands)
 
 # Lab Exercise
 
 Multiple Nodes And Search
 
-* Add load balancer role with haproxy recipe
-* Bootstrap a new node with load balancer role
-* Use knife ssh to rerun chef client
+* Use knife search to find all servers with a particular Ohai attribute like platform:centos.
+* Use knife ssh to rerun chef client.
+* Use knife ssh to check for, and apply, updates on your assigned machine.

@@ -15,33 +15,31 @@ This work is licensed under a Creative Commons Attribution Share Alike 3.0 Unite
 Use knife to download additional cookbooks from the Opscode Chef
 Community site.
 
-    > knife cookbook site download apt
-    > knife cookbook site download chef-client
-    > knife cookbook site download fail2ban
-    > knife cookbook site download apache2
+    > knife cookbook site download yum
+    > knife cookbook site download yumrepo
+    > knife cookbook site download git 
+    > knife cookbook site download oracle
 
 # Extract Cookbooks
 
 Knife downloads the cookbook from the community site as a `.tar.gz`
 file. The file name will be the cookbook name, with the version. For
-example, "`apache2-1.0.8.tar.gz`".
+example, "`oracle-0.0.9.tar.gz`".
 
-    > knife cookbook site download apache2
-    Downloading apache2 from the cookbooks site at version
-    1.0.8 to $PWD/apache2-1.0.8.tar.gz
-    Cookbook saved: $PWD/apache2-1.0.8.tar.gz
-    > tar -zxvf apache2-1.0.8.tar.gz -C cookbooks/
-    > ls cookbooks/apache2
+    > knife cookbook site download oracle
+    Downloading oracle from the cookbooks site at version
+    0.0.9 to $PWD/oracle-0.0.9.tar.gz
+    Cookbook saved: $PWD/oracle-0.0.9.tar.gz
+    > tar -zxvf oracle-0.0.9.tar.gz -C cookbooks/
+    > ls cookbooks/oracle
 
 # Use Your VCS
 
 Knife currently integrates with Git in the "cookbook site install"
 command.
 
-You can use any version control system you like.
-
-There will be additional steps required to untar cookbooks,
-branch/merge, etc, depending on your tool.
+Git should alert you to any merge conflicts, which may need
+corrected before you can push these back to the MU Chef repository.
 
 # Examine the Cookbooks
 
@@ -59,7 +57,9 @@ cookbooks so you know what they're going to do.
 # Upload cookbooks
 
 Once code has been reviewed, upload the cookbooks to the server. All
-cookbooks can be uploaded at one time.
+cookbooks can be uploaded at one time with the `-a` switch.  However,
+the safest and quickest option would be to upload just the cookbooks you
+wish to change or update.
 
     > knife cookbook upload -a
     Uploading apache2                 [1.0.8]
@@ -107,41 +107,39 @@ appear in the run list explicitly.
 The server reads the metadata as JSON, it does not parse the recipes
 (which are Ruby).
 
-This is a security feature, the Chef Server does not execute the Ruby
-code.
 
 # Using Roles
 
 We typically apply multiple related recipes to a node via a role.
 
-A `base` role is a great place to apply things that need to be done
+Our `base5` role is a great place to apply things that need to be done
 for all systems.
 
 # Sample base Role
 
     @@@ruby
-    name "base"
+    name "base5"
     description "Base role is applied to all systems"
     run_list(
-      "recipe[apt]",
-      "recipe[fail2ban]",
-      "recipe[chef-client]"
+      "recipe[chef-client]",
+      "recipe[yumrepo]",
+      "recipe[users::itisystems]"
     )
 
 # Order Matters
 
-We put `apt` before other cookbooks in the list to make sure the
+We put `yumrepo` before other cookbooks in the list to make sure the
 system package cache is updated for package resources.
 
-For example, the default action in the `fail2ban` package resource is
-upgrade, so apt will ensure we always have the latest version
-including security fixes.
+For example, the default action for all of the package resources in the
+MU chef-repo is install.  The yumrepo cookbook will ensure we always have
+the latest version of Dell, VMWare, or EPEL packages available to Chef.
 
 # Apply Role to Node
 
 Applying the role to the node can be done with knife.
 
-    > knife node run list add NODE 'role[base]'
+    > knife node run list add NODE 'role[base5]'
 
 However, this appends the role to the end of the node's run list. To
 insert it before another item, you need to edit the node directly.
@@ -158,8 +156,8 @@ The `$EDITOR` environment variable must be set, or specified with
     @@@javascript
     {
       "run_list": [
-        "role[base]",
-        "role[webserver]"
+        "role[base5]",
+        "role[java]"
       ]
     }
 
@@ -171,8 +169,8 @@ node's run list.
 
     > sudo chef-client
     INFO: *** Chef 0.10.8 ***
-    INFO: Run List is [role[base], role[webserver]]
-    INFO: Run List expands to [apt, fail2ban, chef-client, webserver]
+    INFO: Run List is [role[base5], role[java]]
+    INFO: Run List expands to [inittab, users::itisystems, ...]
 
 # Common Patterns
 
@@ -184,157 +182,99 @@ Many things automated with Chef follow a pattern:
 
 Let's walk through another example of this pattern.
 
-# haproxy Cookbook
+# SNMP Cookbook
 
-Download the haproxy cookbook.
+Download the snmp cookbook.
 
-    > knife cookbook site download haproxy
-    > tar -zxvf haproxy-1.0.4.tar.gz -C cookbooks
+    > knife cookbook site download snmp
+    > tar -zxvf haproxy-0.2.1.tar.gz -C cookbooks
 
-We will explore the haproxy cookbook for this pattern because we'll
+We will explore the snmp cookbook for this pattern because we'll
 revisit it in the next section on search.
 
-# haproxy default recipe
+# snmp default recipe
 
-The default recipe follows the pattern.
-
-    @@@ruby
-    package "haproxy"
-
-    template "/etc/default/haproxy"
-
-    service "haproxy"
-
-    template "/etc/haproxy/haproxy.cfg" do
-      notifies :restart, "service[haproxy]"
-    end
-
-# haproxy default recipe
-
-The haproxy software is available as a package named `haproxy` for
-many platforms.
-
-    package "haproxy" do
-      action :install
-    end
-
-.notes On RHEL, it is available from EPEL.
-
-# haproxy default template
-
-On Debian/Ubuntu, the service is controlled by a config file
-`/etc/default/haproxy`.
+The default recipe follows this simple pattern, first install the packages.
 
     @@@ruby
-    template "/etc/default/haproxy" do
-      source "haproxy-default.erb"
+    node['snmp']['packages'].each do |snmppkg|
+      package snmppkg
+    end    
+
+# snmp default recipe
+
+This part of the recipe drops off any plugins or supplemental
+config files, if any are defined.
+
+    @@@ruby
+    if not node['snmp']['cookbook_files'].empty?
+      node['snmp']['cookbook_files'].each do |snmpfile|
+        cookbook_file snmpfile do
+          mode 0644
+          owner "root"
+          group "root"
+        end
+      end
+    end
+
+# snmp default recipe
+
+This part of the recipe enables the service to start at boot,
+and starts the snmp service at this time.
+
+    @@@ruby
+    service node['snmp']['service'] do
+      action [ :start, :enable ]
+    end
+
+# snmp default recipe
+
+Finally, the recipe renders the main configuration file for snmpd.
+When doing so, the template resource notifies the service to restart,
+loading the new configuration file.
+
+    @@@ruby  
+    template "/etc/snmp/snmpd.conf" do
+      mode 0644
       owner "root"
       group "root"
-      mode 0644
+      notifies :restart, resources(:service => node['snmp']['service'])
     end
 
-.notes Due to this specific file, the recipe won't work on RHEL systems.
+# snmp default attributes
 
-# haproxy default template
-
-The `haproxy-default.erb` template came from the package, with a modification.
-
-    @@@sh
-    # Set ENABLED to 1 if you want the init script to start haproxy.
-    ENABLED=1
-    # Add extra flags here.
-    #EXTRAOPTS="-de -m 16"
-
-The haproxy init script checks the value of `ENABLED` and exits if it
-is `0`.
-
-If Chef tries to start the service, it would not actually
-start unless this is modified, hence it must be managed by Chef.
-
-# haproxy service
-
-We will manage the haproxy service with this recipe. It will be
-enabled at boot time and started if it is not running.
+The default attributes file sets platform-specific attributes for
+the recipe code, and template.
 
     @@@ruby
-    service "haproxy" do
-      supports :restart => true, :status => true, :reload => true
-      action [:enable, :start]
+    case node['platform']
+    when "redhat","centos","fedora","scientific"
+      set['snmp']['packages'] = ["net-snmp", "net-snmp-utils"]
+      set['snmp']['cookbook_files'] = Array.new
     end
 
-The init script supports the restart, status and reload commands.
+    default['snmp']['service'] = "snmpd"
 
-     service haproxy
-     Usage: /etc/init.d/haproxy {start|stop|reload|restart|status}
+# snmp template
 
-# haproxy configuration template
-
-We will manage a semi-static configuration file as a template. Next
-unit we will discuss a more dynamic configuration.
+The default template makes use of node attributes, and ohai attributes
+to render the correct snmpd.conf
 
     @@@ruby
-    template "/etc/haproxy/haproxy.cfg" do
-      source "haproxy.cfg.erb"
-      owner "root"
-      group "root"
-      mode 0644
-      notifies :restart, "service[haproxy]"
-    end
-
-We could have used the `:reload` action, since the service supports it.
-
-# haproxy configuration template
-
-The source template is in
-`cookbooks/haproxy/templates/default/haproxy.cfg.erb`.
-
-The default configuration file that comes with the package is not
-tuned for general use and will need to be modified.
-
-This is why the default file does not enable the service.
-
-We ship a plain configuration template in the cookbook that you can
-modify. In the next unit we'll look at an example of this kind of
-modification.
-
-# haproxy configuration template
-
-The source template for the configuration file uses some attributes
-set by the cookbook. Excerpts from the template:
-
-    listen application 0.0.0.0:<%= node["haproxy"]["incoming_port"] %>
-      balance  <%= node["haproxy"]["balance_algorithm"] %>
-
-    <% if node["haproxy"]["enable_admin"] -%>
-    listen admin 0.0.0.0:22002
-      mode http
-      stats uri /
-    <% end -%>
-
-# haproxy attributes
-
-    @@@ruby
-    default['haproxy']['incoming_port'] = "80"
-    default['haproxy']['enable_admin'] = true
-    default['haproxy']['balance_algorithm'] = "roundrobin"
-
-# haproxy modifying attributes
-
-We can modify the attributes directly editing the cookbook, or even
-better, by applying them with a role appropriate to the task.
-
-    @@@ruby
-    name "load_balancer"
-    description "Systems that balance the load"
-    run_list(
-      "recipe[haproxy]"
-    )
-    default_attributes(
-      "haproxy" => {
-        "incoming_port" => "8080",
-        "enable_admin" => false
-      }
-    )
+    com2sec notConfigUser  default       <%= node[:snmp][:community] %> 
+    group   notConfigGroup v1            notConfigUser
+    group   notConfigGroup v2c           notConfigUser
+    <% if node[:snmp][:full_systemview] %>
+    view    systemview    included   .1
+    <% end %>
+    view    systemview    included   .1.3.6.1.2.1.1
+    view    systemview    included   .1.3.6.1.2.1.25.1.1
+    access  notConfigGroup ""      any       noauth    exact  systemview none none
+    <% if node[:virtualization][:role] == "guest" %>
+    syslocation <%= node[:snmp][:syslocationVirtual] %>
+    <% else %>
+    syslocation <%= node[:snmp][:syslocationPhysical] %>
+    <% end %>
 
 # Summary
 
@@ -359,6 +299,5 @@ better, by applying them with a role appropriate to the task.
 
 More Cookbooks
 
-* Apply apt, chef-client, and fail2ban recipes via a base role
-* Add apache2 recipe to webserver role
+* Apply snmp, yumrepo::default, and any other recipe via cheftrain role
 * Download and examine the haproxy cookbook
